@@ -652,11 +652,21 @@ function buildThemeGrid() {
     `;
     button.addEventListener("click", () => {
       state.currentTheme = index;
+      applyThemePreset(theme);
       buildThemeGrid();
       renderChart();
     });
     root.appendChild(button);
   });
+}
+
+function applyThemePreset(theme) {
+  document.getElementById("customHeaderBg").value = theme.accent;
+  document.getElementById("customHeaderText").value = "#ffffff";
+  document.getElementById("customSeries1").value = theme.series[0];
+  document.getElementById("customSeries2").value = theme.series[1];
+  document.getElementById("customGridColor").value = theme.grid;
+  document.getElementById("customAxisColor").value = theme.axis;
 }
 
 function detectDelimiter(text) {
@@ -1566,6 +1576,7 @@ document.getElementById("dataInput").addEventListener("keydown", event => {
 });
 
 buildThemeGrid();
+applyThemePreset(THEMES[state.currentTheme]);
 updateControlVisibility();
 loadSample();
 </script>
