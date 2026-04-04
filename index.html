@@ -3,690 +3,1571 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Markdown ➡ テーブル変換くん v3.1</title>
+<title>Markdown ➡ テーブル変換くん v4.0</title>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
-
 <style>
 :root {
-  --bg: #f5f6fa;
-  --surface: #ffffff;
-  --surface2: #f0f1f8;
-  --border: #e2e4ee;
-  --accent: #6355e8;
-  --accent2: #d63f7a;
-  --text: #1a1a2e;
-  --muted: #8b8fa8;
-  --success: #16a34a;
+  --bg: #f4f1ea;
+  --surface: #fffdf8;
+  --surface-strong: #ffffff;
+  --panel: #f8f5ee;  --line: #ddd5c8;
+  --text: #231c16;
+  --muted: #786d60;
+  --accent: #bd5f2d;
+  --accent-soft: #f3d7c9;
+  --success: #2e8b57;
 
-  /* Table themes */
-  --th-bg: #dbeafe;
-  --th-text: #1e3a5f;
-  --td-bg: #ffffff;
-  --td-alt: #f0f6ff;
-  --td-border: #dde6f5;
-  --table-font: 'Noto Sans JP', system-ui, sans-serif;
-  --table-fontsize: 14px;
-  --table-padding: 10px 14px;
-  --table-radius: 12px;
+  --chart-bg: #ffffff;
+  --chart-grid: #ece5d8;
+  --chart-axis: #8d7f70;
+  --series-1: #bd5f2d;
+  --series-2: #1f6f78;
+  --series-3: #c69214;
+  --series-4: #7d6ab3;
+  --series-5: #cc4c7a;
+  --series-6: #2b8c60;
+  --bar-radius: 10;
+  --font-size: 14px;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; }
 
 body {
-  font-family: 'Outfit', system-ui, sans-serif;
-  background: var(--bg);
-  color: var(--text);
+  margin: 0;
   min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(189,95,45,.08), transparent 25%),
+    radial-gradient(circle at right 20%, rgba(31,111,120,.08), transparent 22%),
+    var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif;
 }
 
-/* ── HEADER ── */
 header {
-  padding: 24px 32px 20px;
-  border-bottom: 1px solid var(--border);
+  padding: 24px 32px 18px;
+  background: rgba(255, 253, 248, .92);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(10px);
+}
+
+.brand {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: #ffffff;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.brand-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #bd5f2d, #1f6f78);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  font-weight: 700;
 }
 
-.logo-icon {
-  width: 36px; height: 36px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
+.brand h1 {
+  margin: 0;
+  font-size: 22px;
 }
 
-.logo-text { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
-.logo-sub { font-size: 12px; color: var(--muted); margin-left: 4px; }
+.brand p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
 
-/* ── LAYOUT ── */
 .layout {
   display: grid;
-  grid-template-columns: 380px 1fr;
-  gap: 0;
-  height: calc(100vh - 73px);
+  grid-template-columns: 400px 1fr;
+  min-height: calc(100vh - 85px);
 }
 
-/* ── LEFT PANEL ── */
-.panel-left {
-  border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
+.panel {
+  background: rgba(255, 253, 248, .92);
+  border-right: 1px solid var(--line);
   overflow-y: auto;
-  background: #ffffff;
 }
 
 .section {
   padding: 20px 24px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--line);
 }
 
-.section-label {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 1.2px;
-  color: var(--muted);
+.section h2 {
+  margin: 0 0 12px;
+  font-size: 12px;
+  letter-spacing: .12em;
   text-transform: uppercase;
-  margin-bottom: 12px;
+  color: var(--muted);
 }
 
-textarea#md {
-  width: 100%;
-  min-height: 180px;
-  background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
-  font-family: 'DM Mono', monospace;
-  font-size: 13px;
-  color: var(--text);
-  resize: vertical;
-  outline: none;
-  transition: border-color .2s;
+.hint {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 12px;
   line-height: 1.6;
 }
-textarea#md:focus { border-color: var(--accent); }
 
-/* Theme picker */
+textarea,
+input[type="text"],
+select {
+  width: 100%;
+  border: 1px solid var(--line);
+  background: var(--surface-strong);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+}
+
+textarea {
+  min-height: 210px;
+  resize: vertical;
+  line-height: 1.6;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.control {
+  margin-bottom: 14px;
+}
+
+.control label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+input[type="range"] {
+  width: 100%;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.toggle input {
+  width: 18px;
+  height: 18px;
+}
+
 .theme-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
 }
 
 .theme-btn {
-  border: 2px solid transparent;
-  border-radius: 8px;
-  padding: 6px 4px;
-  cursor: pointer;
-  background: #ffffff;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 5px;
-  transition: border-color .15s, transform .1s;
-}
-.theme-btn:hover { transform: translateY(-1px); }
-.theme-btn.active { border-color: var(--accent); }
-
-.theme-preview {
-  width: 100%;
-  height: 28px;
-  border-radius: 4px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.theme-preview .th-row {
-  height: 12px;
-  border-radius: 2px;
-}
-.theme-preview .td-row {
-  height: 8px;
-  border-radius: 2px;
-  opacity: .6;
-}
-
-.theme-name { font-size: 10px; color: var(--muted); font-weight: 500; }
-
-/* Controls */
-.control-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-.control-label { font-size: 13px; color: var(--text); }
-.control-value { font-size: 12px; color: var(--accent); font-family: 'DM Mono', monospace; min-width: 36px; text-align: right; }
-
-input[type=range] {
-  -webkit-appearance: none;
-  width: 100%;
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  outline: none;
-  margin-bottom: 16px;
-}
-input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px; height: 16px;
-  background: var(--accent);
-  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--surface-strong);
+  border-radius: 12px;
+  padding: 10px;
   cursor: pointer;
 }
 
-/* Striped toggle */
-.toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
+.theme-btn.active {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
-.toggle-label { font-size: 13px; }
 
-.toggle {
-  position: relative;
-  width: 40px; height: 22px;
-}
-.toggle input { opacity: 0; width: 0; height: 0; }
-.toggle-slider {
-  position: absolute;
-  inset: 0;
-  background: var(--border);
-  border-radius: 11px;
-  cursor: pointer;
-  transition: background .2s;
-}
-.toggle-slider::before {
-  content: '';
-  position: absolute;
-  width: 16px; height: 16px;
-  left: 3px; top: 3px;
-  background: white;
-  border-radius: 50%;
-  transition: transform .2s;
-}
-.toggle input:checked + .toggle-slider { background: var(--accent); }
-.toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
-
-/* Action buttons */
-.btn-group {
-  padding: 20px 24px;
+.theme-swatches {
   display: flex;
-  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.theme-swatch {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+}
+
+.theme-name {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.actions {
+  padding: 20px 24px 28px;
+  display: grid;
   gap: 10px;
-  margin-top: auto;
+}
+
+button {
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  padding: 13px 14px;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .btn-primary {
-  width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  border: none;
-  border-radius: 12px;
-  color: white;
-  font-family: 'Outfit', sans-serif;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity .15s, transform .1s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  background: linear-gradient(135deg, #bd5f2d, #d08c22);
+  color: #fff;
 }
-.btn-primary:hover { opacity: .9; transform: translateY(-1px); }
-.btn-primary:active { transform: translateY(0); }
 
 .btn-secondary {
-  width: 100%;
-  padding: 12px;
-  background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  background: var(--surface-strong);
+  border: 1px solid var(--line);
   color: var(--text);
-  font-family: 'Outfit', sans-serif;
-  font-size: 14px;
-  cursor: pointer;
-  transition: border-color .15s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
 }
-.btn-secondary:hover { border-color: var(--accent); }
 
-/* ── RIGHT PANEL ── */
-.panel-right {
+.preview {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  min-width: 0;
 }
 
-.preview-header {
+.preview-head {
   padding: 16px 28px;
-  border-bottom: 1px solid var(--border);
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  background: #ffffff;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  background: rgba(255, 253, 248, .92);
 }
 
-.preview-title { font-size: 13px; color: var(--muted); font-weight: 600; letter-spacing: .8px; text-transform: uppercase; }
-
-.status-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--border);
-  display: inline-block;
-  margin-right: 6px;
-  transition: background .3s;
+.status {
+  font-size: 12px;
+  color: var(--muted);
 }
-.status-dot.ready { background: var(--success); box-shadow: 0 0 6px var(--success); }
 
-.preview-area {
+.status.ready {
+  color: var(--success);
+}
+
+.preview-stage {
   flex: 1;
   overflow: auto;
+  padding: 34px;
   display: flex;
-  align-items: flex-start;
   justify-content: center;
-  padding: 40px 32px;
-  background:
-    radial-gradient(ellipse at 20% 80%, rgba(99,85,232,.06) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 20%, rgba(214,63,122,.05) 0%, transparent 60%),
-    #eef0f8;
+  align-items: flex-start;
 }
 
-/* capture target */
 #captureTarget {
-  background: white;
-  border-radius: var(--table-radius);
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,.4);
-  max-width: 860px;
-  width: 100%;
+  width: min(100%, 1200px);
+  background: var(--chart-bg);
+  border-radius: 24px;
+  box-shadow: 0 30px 80px rgba(32, 24, 18, .12);
+  padding: 28px 28px 22px;
 }
 
-/* ── GENERATED TABLE ── */
-table.gen {
+.empty {
+  padding: 90px 30px;
+  text-align: center;
+  color: var(--muted);
+  line-height: 1.8;
+}
+
+.chart-header {
+  margin-bottom: 18px;
+}
+
+.chart-title {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.chart-subtitle {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.chart-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+table.data-table {
   width: 100%;
   border-collapse: collapse;
   table-layout: fixed;
-  font-family: var(--table-font);
-  font-size: var(--table-fontsize);
-  background: var(--td-bg);
+  font-size: 15px;
 }
 
-table.gen th {
-  background: var(--th-bg);
-  color: var(--th-text);
-  font-weight: 700;
-  padding: var(--table-padding);
-  border: 1px solid var(--td-border);
+table.data-table th,
+table.data-table td {
+  border: 1px solid var(--chart-grid);
+  padding: 12px 14px;
   text-align: left;
-  white-space: normal;
   overflow-wrap: anywhere;
 }
 
-table.gen td {
-  padding: var(--table-padding);
-  border: 1px solid var(--td-border);
-  color: #1a1a2e;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  background: var(--td-bg);
+table.data-table th {
+  background: var(--table-header-bg, var(--accent));
+  color: var(--table-header-text, #ffffff);
+  font-weight: 800;
 }
 
-table.gen.striped tbody tr:nth-child(even) td {
-  background: var(--td-alt);
+table.data-table tbody tr:nth-child(even) td {
+  background: var(--table-alt-bg, #faf7f1);
 }
 
-/* ── TOAST ── */
-.toast {
-  position: fixed;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: #1a1a2e;
-  border: 1px solid #2e2e3a;
-  color: #e8e8f0;
-  border-radius: 12px;
-  padding: 12px 22px;
-  font-size: 14px;
-  font-weight: 500;
+.legend {
   display: flex;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.legend-item {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
-  z-index: 100;
-  pointer-events: none;
 }
-.toast.show { transform: translateX(-50%) translateY(0); }
-.toast-icon { font-size: 18px; }
 
-/* empty state */
-.empty {
-  color: var(--muted);
-  font-size: 14px;
-  text-align: center;
-  padding: 60px 20px;
+.legend-chip {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  flex: 0 0 auto;
 }
-.empty-icon { font-size: 48px; margin-bottom: 12px; opacity: .3; }
+
+.footer-note {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f0eadf;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%) translateY(90px);
+  background: #2d241c;
+  color: #fff;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-size: 13px;
+  transition: transform .25s ease;
+  z-index: 30;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+@media (max-width: 980px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .panel {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .preview-stage {
+    padding: 18px;
+  }
+
+  #captureTarget {
+    padding: 20px 18px 18px;
+  }
+}
 </style>
 </head>
 <body>
-
 <header>
-  <div class="logo">
-    <div class="logo-icon">⚡</div>
-    <span class="logo-text">Markdown ➡ テーブル変換くん v3.1</span>
-    <span class="logo-sub">for note</span>
+  <div class="brand">
+    <div class="brand-icon">G</div>
+    <div>
+      <h1>Markdown ➡ テーブル変換くん v4.0</h1>
+      <p>CSV・TSV・Markdown表を、noteに貼りやすいグラフPNGへ変換</p>
+    </div>
   </div>
 </header>
 
 <div class="layout">
-
-  <!-- LEFT: Controls -->
-  <div class="panel-left">
-
+  <aside class="panel">
     <div class="section">
-      <div class="section-label">Markdown 入力</div>
-      <textarea id="md" placeholder="| 項目 | 内容 | 備考 |
-|------|------|------|
-| A    | テスト | OK  |
-| B    | サンプル | — |"></textarea>
-    </div>
-
-    <div class="section">
-      <div class="section-label">カラーテーマ</div>
-      <div class="theme-grid" id="themeGrid">
-        <!-- JS で生成 -->
-      </div>
+      <h2>Data Input</h2>
+      <p class="hint">1列目をラベル、2列目以降を数値として扱います。Markdown表、CSV、TSV、スプレッドシート貼り付けに対応します。</p>
+      <textarea id="dataInput" placeholder="| 月 | 売上 | 目標 |
+|---|---:|---:|
+| 1月 | 120 | 100 |
+| 2月 | 135 | 110 |
+| 3月 | 168 | 130 |
+| 4月 | 155 | 140 |"></textarea>
     </div>
 
     <div class="section">
-      <div class="section-label">スタイル調整</div>
-
-      <div class="control-row">
-        <span class="control-label">フォントサイズ</span>
-        <span class="control-value" id="fontSizeVal">14px</span>
+      <h2>Chart Setup</h2>
+      <div class="control">
+        <label for="chartTitle">タイトル</label>
+        <input id="chartTitle" type="text" value="月別売上の推移">
       </div>
-      <input type="range" id="fontSize" min="11" max="20" value="14" oninput="updateStyles()">
-
-      <div class="control-row">
-        <span class="control-label">セルの余白</span>
-        <span class="control-value" id="paddingVal">10px</span>
+      <div class="control">
+        <label for="chartSubtitle">補足</label>
+        <input id="chartSubtitle" type="text" value="2026年上期の売上実績。note掲載向けに見やすく整形。">
       </div>
-      <input type="range" id="cellPad" min="4" max="24" value="10" oninput="updateStyles()">
-
-      <div class="toggle-row">
-        <span class="toggle-label">交互カラー（ストライプ）</span>
-        <label class="toggle">
-          <input type="checkbox" id="stripeToggle" onchange="updateStyles()">
-          <span class="toggle-slider"></span>
-        </label>
+      <div class="row">
+        <div class="control">
+          <label for="outputMode">出力モード</label>
+          <select id="outputMode">
+            <option value="chart">グラフ</option>
+            <option value="table">表</option>
+          </select>
+        </div>
+        <div class="control">
+          <label for="chartType">グラフ種類</label>
+          <select id="chartType">
+            <option value="bar">棒グラフ</option>
+            <option value="line">折れ線グラフ</option>
+            <option value="area">エリアグラフ</option>
+            <option value="grouped-bar">集合棒グラフ</option>
+            <option value="stacked-bar">積み上げ棒グラフ</option>
+            <option value="scatter">散布図</option>
+            <option value="pie">円グラフ</option>
+          </select>
+        </div>
+        <div class="control">
+          <label for="chartSize">画像サイズ</label>
+          <select id="chartSize">
+            <option value="wide">横長 1200x675</option>
+            <option value="square">正方形 1080x1080</option>
+            <option value="tall">縦長 1080x1350</option>
+          </select>
+        </div>
       </div>
-
-    </div>
-
-    <div class="btn-group">
-      <button class="btn-primary" onclick="convertAndCopy()">
-        <span>⚡</span> 変換して画像コピー
-      </button>
-      <button class="btn-secondary" onclick="copyOnly()">
-        <span>📋</span> 画像だけコピー
-      </button>
-      <button class="btn-secondary" onclick="downloadPng()">
-        <span>🖼️</span> PNGで保存
-      </button>
-      <button class="btn-secondary" onclick="copyHtml()">
-        <span>📄</span> HTMLをコピー
-      </button>
-      <button class="btn-secondary" onclick="downloadCsv()">
-        <span>⬇️</span> CSV ダウンロード
-      </button>
-    </div>
-
-  </div>
-
-  <!-- RIGHT: Preview -->
-  <div class="panel-right">
-    <div class="preview-header">
-      <span class="preview-title">プレビュー</span>
-      <span><span class="status-dot" id="statusDot"></span><span id="statusText" style="font-size:12px;color:var(--muted);">待機中</span></span>
-    </div>
-    <div class="preview-area">
-      <div id="captureTarget">
-        <div class="empty">
-          <div class="empty-icon">📋</div>
-          <div>左にMarkdownを貼り付けて<br>「変換」してください</div>
+      <div class="row">
+        <div class="control">
+          <label for="seriesIndex">使用する数値列</label>
+          <select id="seriesIndex"></select>
+        </div>
+        <div class="control">
+          <label for="seriesIndexSecondary">第2数値列</label>
+          <select id="seriesIndexSecondary"></select>
+        </div>
+        <div class="control">
+          <label for="valueUnit">単位</label>
+          <input id="valueUnit" type="text" value="万円">
         </div>
       </div>
     </div>
-  </div>
 
+    <div class="section">
+      <h2>Visual</h2>
+      <div class="control">
+        <label for="fontScale">文字サイズ <span id="fontScaleValue">100%</span></label>
+        <input id="fontScale" type="range" min="85" max="125" value="100">
+      </div>
+      <div class="control">
+        <label for="barRadius">角丸 <span id="barRadiusValue">10</span></label>
+        <input id="barRadius" type="range" min="0" max="22" value="10">
+      </div>
+      <div class="toggle">
+        <label for="showLegend">凡例を表示</label>
+        <input id="showLegend" type="checkbox" checked>
+      </div>
+      <div class="toggle">
+        <label for="showValues">値ラベルを表示</label>
+        <input id="showValues" type="checkbox" checked>
+      </div>
+      <div class="toggle">
+        <label for="showMarkers">折れ点を表示</label>
+        <input id="showMarkers" type="checkbox" checked>
+      </div>
+      <div class="toggle">
+        <label for="showGrid">補助線を表示</label>
+        <input id="showGrid" type="checkbox" checked>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Custom Colors</h2>
+      <div class="row">
+        <div class="control">
+          <label for="customHeaderBg">表ヘッダー背景</label>
+          <input id="customHeaderBg" type="color" value="#bd5f2d">
+        </div>
+        <div class="control">
+          <label for="customHeaderText">表ヘッダー文字</label>
+          <input id="customHeaderText" type="color" value="#ffffff">
+        </div>
+      </div>
+      <div class="row">
+        <div class="control">
+          <label for="customSeries1">グラフ主色</label>
+          <input id="customSeries1" type="color" value="#bd5f2d">
+        </div>
+        <div class="control">
+          <label for="customSeries2">グラフ副色</label>
+          <input id="customSeries2" type="color" value="#1f6f78">
+        </div>
+      </div>
+      <div class="row">
+        <div class="control">
+          <label for="customGridColor">補助線色</label>
+          <input id="customGridColor" type="color" value="#ece5d8">
+        </div>
+        <div class="control">
+          <label for="customAxisColor">軸色</label>
+          <input id="customAxisColor" type="color" value="#8d7f70">
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Theme</h2>
+      <div class="theme-grid" id="themeGrid"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" id="renderBtn">プレビュー更新</button>
+      <button class="btn-secondary" id="copyBtn">画像をクリップボードへコピー</button>
+      <button class="btn-secondary" id="pngBtn">PNGで保存</button>
+      <button class="btn-secondary" id="sampleBtn">サンプルを読み込む</button>
+    </div>
+  </aside>
+
+  <main class="preview">
+    <div class="preview-head">
+      <strong>Preview</strong>
+      <span class="status" id="statusText">未描画</span>
+    </div>
+    <div class="preview-stage">
+      <div id="captureTarget">
+        <div class="empty">左にデータを貼り付けて、<br>「プレビュー更新」を押してください。</div>
+      </div>
+    </div>
+  </main>
 </div>
 
-<!-- Toast -->
-<div class="toast" id="toast">
-  <span class="toast-icon" id="toastIcon">✅</span>
-  <span id="toastMsg">コピーしました</span>
-</div>
+<div class="toast" id="toast">完了しました</div>
 
 <script>
-// ── THEMES ──
 const THEMES = [
-  { name: 'Ocean', thBg: '#dbeafe', thTx: '#1e3a5f', tdAlt: '#f0f6ff', border: '#dde6f5' },
-  { name: 'Forest', thBg: '#dcfce7', thTx: '#14532d', tdAlt: '#f0fdf4', border: '#bbf7d0' },
-  { name: 'Rose',   thBg: '#fce7f3', thTx: '#831843', tdAlt: '#fff1f5', border: '#fbcfe8' },
-  { name: 'Slate',  thBg: '#e2e8f0', thTx: '#1e293b', tdAlt: '#f8fafc', border: '#cbd5e1' },
-  { name: 'Amber',  thBg: '#fef3c7', thTx: '#78350f', tdAlt: '#fffbeb', border: '#fde68a' },
-  { name: 'Violet', thBg: '#ede9fe', thTx: '#3b0764', tdAlt: '#f5f3ff', border: '#ddd6fe' },
-  { name: 'Teal',   thBg: '#ccfbf1', thTx: '#134e4a', tdAlt: '#f0fdfa', border: '#99f6e4' },
-  { name: 'Mono',   thBg: '#1e1e2e', thTx: '#ffffff', tdAlt: '#f9fafb', border: '#e5e7eb' },
+  {
+    name: "Terracotta",
+    accent: "#bd5f2d",
+    bg: "#ffffff",
+    grid: "#ece5d8",
+    axis: "#8d7f70",
+    series: ["#bd5f2d", "#1f6f78", "#c69214", "#7d6ab3", "#cc4c7a", "#2b8c60"]
+  },
+  {
+    name: "Marine",
+    accent: "#176b87",
+    bg: "#ffffff",
+    grid: "#dfeaf1",
+    axis: "#6a7c88",
+    series: ["#176b87", "#64ccc5", "#0f4c75", "#f4a261", "#8d99ae", "#7b2cbf"]
+  },
+  {
+    name: "Forest",
+    accent: "#3a7d44",
+    bg: "#ffffff",
+    grid: "#e3efe2",
+    axis: "#6f7d6b",
+    series: ["#3a7d44", "#a4c3a2", "#588157", "#bc6c25", "#6c757d", "#7f5539"]
+  },
+  {
+    name: "Mono Ink",
+    accent: "#222222",
+    bg: "#ffffff",
+    grid: "#ebebeb",
+    axis: "#6a6a6a",
+    series: ["#222222", "#575757", "#8f8f8f", "#b6b6b6", "#3a86ff", "#ff006e"]
+  },
+  {
+    name: "Berry",
+    accent: "#b3396b",
+    bg: "#ffffff",
+    grid: "#f2dce5",
+    axis: "#8f6b7b",
+    series: ["#b3396b", "#3f88c5", "#f6aa1c", "#6b4f9d", "#0d9488", "#d97706"]
+  },
+  {
+    name: "Sunrise",
+    accent: "#d97706",
+    bg: "#ffffff",
+    grid: "#f8ead1",
+    axis: "#8c7552",
+    series: ["#d97706", "#ef4444", "#0f766e", "#2563eb", "#a855f7", "#65a30d"]
+  }
 ];
 
-let currentTheme = 0;
-let parsedData = null;
+const SIZE_PRESETS = {
+  wide: { width: 1200, height: 675 },
+  square: { width: 1080, height: 1080 },
+  tall: { width: 1080, height: 1350 }
+};
+
+const state = {
+  parsed: null,
+  currentTheme: 0
+};
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  setTimeout(() => toast.classList.remove("show"), 2200);
+}
 
 function buildThemeGrid() {
-  const grid = document.getElementById('themeGrid');
-  THEMES.forEach((t, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'theme-btn' + (i === 0 ? ' active' : '');
-    btn.onclick = () => selectTheme(i);
-    btn.innerHTML = `
-      <div class="theme-preview">
-        <div class="th-row" style="background:${t.thBg}"></div>
-        <div class="td-row" style="background:#ffffff"></div>
-        <div class="td-row" style="background:${t.tdAlt}"></div>
+  const root = document.getElementById("themeGrid");
+  root.innerHTML = "";
+  THEMES.forEach((theme, index) => {
+    const button = document.createElement("button");
+    button.className = "theme-btn" + (index === state.currentTheme ? " active" : "");
+    button.type = "button";
+    button.innerHTML = `
+      <div class="theme-swatches">
+        ${theme.series.slice(0, 4).map(color => `<span class="theme-swatch" style="background:${color}"></span>`).join("")}
       </div>
-      <span class="theme-name">${t.name}</span>
+      <div class="theme-name">${escapeHtml(theme.name)}</div>
     `;
-    grid.appendChild(btn);
+    button.addEventListener("click", () => {
+      state.currentTheme = index;
+      buildThemeGrid();
+      renderChart();
+    });
+    root.appendChild(button);
   });
 }
 
-function selectTheme(i) {
-  currentTheme = i;
-  document.querySelectorAll('.theme-btn').forEach((b, j) => {
-    b.classList.toggle('active', j === i);
-  });
-  applyTheme();
-  renderTable();
+function detectDelimiter(text) {
+  const firstLine = text.split(/\r?\n/).find(line => line.trim());
+  if (!firstLine) return ",";
+  if (firstLine.includes("\t")) return "\t";
+  if (firstLine.includes("|")) return "|";
+  return ",";
 }
 
-function applyTheme() {
-  const t = THEMES[currentTheme];
-  const r = document.documentElement;
-  r.style.setProperty('--th-bg', t.thBg);
-  r.style.setProperty('--th-text', t.thTx);
-  r.style.setProperty('--td-alt', t.tdAlt);
-  r.style.setProperty('--td-border', t.border);
-}
-
-function updateStyles() {
-  const fs = document.getElementById('fontSize').value;
-  const cp = document.getElementById('cellPad').value;
-  document.getElementById('fontSizeVal').textContent = fs + 'px';
-  document.getElementById('paddingVal').textContent = cp + 'px';
-  document.documentElement.style.setProperty('--table-fontsize', fs + 'px');
-  document.documentElement.style.setProperty('--table-padding', cp + 'px ' + (parseInt(cp) + 4) + 'px');
-  renderTable();
-}
-
-// ── PARSE ──
-function parseMarkdownTable(md) {
-  const lines = md.split(/\r?\n/).map(s => s.trim()).filter(s => s.length > 0);
-  if (lines.length < 2) return null;
-  const toCells = line => {
-    let s = line;
-    if (s.startsWith('|')) s = s.slice(1);
-    if (s.endsWith('|')) s = s.slice(0, -1);
-    return s.split('|').map(x => x.trim());
-  };
-  const head = toCells(lines[0]);
-  const rows = [];
-  for (let i = 2; i < lines.length; i++) {
-    const cells = toCells(lines[i]);
-    while (cells.length < head.length) cells.push('');
-    rows.push(cells.slice(0, head.length));
+function parseDelimitedLine(line, delimiter) {
+  if (delimiter === "|") {
+    let text = line.trim();
+    if (text.startsWith("|")) text = text.slice(1);
+    if (text.endsWith("|")) text = text.slice(0, -1);
+    return text.split("|").map(cell => cell.trim());
   }
-  return { head, rows };
+
+  const cells = [];
+  let current = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === delimiter && !inQuotes) {
+      cells.push(current.trim());
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  cells.push(current.trim());
+  return cells;
 }
 
-function escapeHtml(s) {
-  return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+function isMarkdownSeparatorRow(cells) {
+  return cells.every(cell => /^:?-{3,}:?$/.test(cell.replace(/\s/g, "")));
 }
 
-// ** ** → <strong>、* * → <em>、` ` → <code> に変換
-function renderInline(s) {
-  s = escapeHtml(s);
-  s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  s = s.replace(/__(.+?)__/g,     '<strong>$1</strong>');
-  s = s.replace(/\*(.+?)\*/g,     '<em>$1</em>');
-  s = s.replace(/_(.+?)_/g,       '<em>$1</em>');
-  s = s.replace(/`(.+?)`/g,       '<code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:.9em">$1</code>');
-  return s;
+function parseInputTable(raw) {
+  const lines = raw
+    .split(/\r?\n/)
+    .map(line => line.trim())
+    .filter(Boolean);
+  if (lines.length < 2) return null;
+
+  const delimiter = detectDelimiter(raw);
+  const rows = lines.map(line => parseDelimitedLine(line, delimiter));
+  const header = rows[0];
+  const body = isMarkdownSeparatorRow(rows[1]) ? rows.slice(2) : rows.slice(1);
+  if (!header.length || !body.length) return null;
+
+  const normalized = body.map(row => {
+    const padded = row.slice(0, header.length);
+    while (padded.length < header.length) padded.push("");
+    return padded;
+  });
+
+  const series = header.slice(1).map((name, columnIndex) => ({
+    key: columnIndex + 1,
+    name: name || `Series ${columnIndex + 1}`
+  }));
+
+  return {
+    header,
+    rows: normalized,
+    series
+  };
+}
+
+function toNumber(value) {
+  const normalized = String(value)
+    .replace(/[,\s]/g, "")
+    .replace(/[%￥¥円万億]/g, "");
+  const number = Number(normalized);
+  return Number.isFinite(number) ? number : null;
+}
+
+function populateSeriesSelect(parsed) {
+  const select = document.getElementById("seriesIndex");
+  const secondary = document.getElementById("seriesIndexSecondary");
+  const previous = select.value;
+  const previousSecondary = secondary.value;
+  select.innerHTML = "";
+  secondary.innerHTML = "";
+  parsed.series.forEach((series, index) => {
+    const option = document.createElement("option");
+    option.value = String(index);
+    option.textContent = series.name;
+    select.appendChild(option);
+
+    const optionSecondary = document.createElement("option");
+    optionSecondary.value = String(index);
+    optionSecondary.textContent = series.name;
+    secondary.appendChild(optionSecondary);
+  });
+  if (parsed.series.length === 0) {
+    const option = document.createElement("option");
+    option.value = "0";
+    option.textContent = "数値列なし";
+    select.appendChild(option);
+    secondary.appendChild(option.cloneNode(true));
+  }
+  select.value = parsed.series[Number(previous)] ? previous : "0";
+  secondary.value = parsed.series[Number(previousSecondary)] ? previousSecondary : String(Math.min(1, Math.max(parsed.series.length - 1, 0)));
+}
+
+function applyThemeVariables() {
+  const theme = THEMES[state.currentTheme];
+  const root = document.documentElement;
+  const customSeries1 = document.getElementById("customSeries1").value || theme.series[0];
+  const customSeries2 = document.getElementById("customSeries2").value || theme.series[1];
+  const customGrid = document.getElementById("customGridColor").value || theme.grid;
+  const customAxis = document.getElementById("customAxisColor").value || theme.axis;
+  const headerBg = document.getElementById("customHeaderBg").value || theme.accent;
+  const headerText = document.getElementById("customHeaderText").value || "#ffffff";
+  const seriesPalette = [customSeries1, customSeries2, ...theme.series.slice(2)];
+
+  root.style.setProperty("--accent", customSeries1);
+  root.style.setProperty("--chart-bg", theme.bg);
+  root.style.setProperty("--chart-grid", customGrid);
+  root.style.setProperty("--chart-axis", customAxis);
+  root.style.setProperty("--table-header-bg", headerBg);
+  root.style.setProperty("--table-header-text", headerText);
+  root.style.setProperty("--table-alt-bg", `${customGrid}33`);
+  seriesPalette.forEach((color, index) => {
+    root.style.setProperty(`--series-${index + 1}`, color);
+  });
+
+  return {
+    ...theme,
+    accent: customSeries1,
+    grid: customGrid,
+    axis: customAxis,
+    series: seriesPalette
+  };
+}
+
+function getCurrentSeriesData(parsed) {
+  const selectedSeriesIndex = Number(document.getElementById("seriesIndex").value || 0);
+  const series = parsed.series[selectedSeriesIndex];
+  if (!series) return null;
+
+  const points = parsed.rows
+    .map(row => ({
+      label: row[0],
+      value: toNumber(row[series.key])
+    }))
+    .filter(point => point.value !== null);
+
+  if (!points.length) return null;
+
+  return {
+    series,
+    points
+  };
+}
+
+function getAllSeriesData(parsed) {
+  return parsed.series
+    .map(series => {
+      const points = parsed.rows
+        .map(row => ({
+          label: row[0],
+          value: toNumber(row[series.key])
+        }))
+        .filter(point => point.value !== null);
+
+      return points.length ? { series, points } : null;
+    })
+    .filter(Boolean);
+}
+
+function getScatterSeriesData(parsed) {
+  const primaryIndex = Number(document.getElementById("seriesIndex").value || 0);
+  const secondaryIndex = Number(document.getElementById("seriesIndexSecondary").value || 0);
+  const xSeries = parsed.series[primaryIndex];
+  const ySeries = parsed.series[secondaryIndex];
+  if (!xSeries || !ySeries || xSeries.key === ySeries.key) return null;
+
+  const points = parsed.rows
+    .map(row => ({
+      label: row[0],
+      x: toNumber(row[xSeries.key]),
+      y: toNumber(row[ySeries.key])
+    }))
+    .filter(point => point.x !== null && point.y !== null);
+
+  if (!points.length) return null;
+
+  return { xSeries, ySeries, points };
+}
+
+function formatValue(value) {
+  const unit = document.getElementById("valueUnit").value.trim();
+  const text = Number(value).toLocaleString("ja-JP");
+  return unit ? `${text}${unit}` : text;
+}
+
+function getScaledFont(base) {
+  const scale = Number(document.getElementById("fontScale").value || 100) / 100;
+  return Math.round(base * scale);
+}
+
+function buildSvgFrame(size) {
+  const top = 34;
+  const side = 28;
+  const footer = 20;
+  const titleBlock = 96;
+  return {
+    width: size.width,
+    height: size.height,
+    chartLeft: side + 72,
+    chartRight: size.width - side - 28,
+    chartTop: top + titleBlock,
+    chartBottom: size.height - side - footer - 60
+  };
+}
+
+function buildBarChart(points, size, theme) {
+  const frame = buildSvgFrame(size);
+  const chartWidth = frame.chartRight - frame.chartLeft;
+  const chartHeight = frame.chartBottom - frame.chartTop;
+  const max = Math.max(...points.map(point => point.value), 1);
+  const steps = 5;
+  const barGap = Math.max(16, chartWidth * 0.03);
+  const slotWidth = chartWidth / points.length;
+  const barWidth = Math.min(78, slotWidth - barGap);
+  const grid = [];
+  const bars = [];
+  const labels = [];
+  const values = [];
+  const showGrid = document.getElementById("showGrid").checked;
+  const showValues = document.getElementById("showValues").checked;
+  const radius = Number(document.getElementById("barRadius").value || 10);
+
+  for (let i = 0; i <= steps; i += 1) {
+    const value = (max / steps) * i;
+    const y = frame.chartBottom - (chartHeight * i / steps);
+    if (showGrid) {
+      grid.push(`<line x1="${frame.chartLeft}" y1="${y}" x2="${frame.chartRight}" y2="${y}" stroke="${theme.grid}" stroke-width="1" />`);
+    }
+    labels.push(`<text x="${frame.chartLeft - 14}" y="${y + 5}" text-anchor="end" font-size="${getScaledFont(13)}" fill="${theme.axis}">${escapeHtml(formatValue(Math.round(value)))}</text>`);
+  }
+
+  points.forEach((point, index) => {
+    const height = Math.max(2, chartHeight * (point.value / max));
+    const x = frame.chartLeft + slotWidth * index + (slotWidth - barWidth) / 2;
+    const y = frame.chartBottom - height;
+    const color = theme.series[index % theme.series.length];
+    bars.push(`<rect x="${x}" y="${y}" width="${barWidth}" height="${height}" rx="${radius}" fill="${color}" />`);
+    labels.push(`<text x="${x + barWidth / 2}" y="${frame.chartBottom + 24}" text-anchor="middle" font-size="${getScaledFont(14)}" fill="${theme.axis}">${escapeHtml(point.label)}</text>`);
+    if (showValues) {
+      values.push(`<text x="${x + barWidth / 2}" y="${y - 10}" text-anchor="middle" font-size="${getScaledFont(13)}" font-weight="700" fill="${color}">${escapeHtml(formatValue(point.value))}</text>`);
+    }
+  });
+
+  return `
+    <svg class="chart-svg" viewBox="0 0 ${size.width} ${size.height}" role="img" aria-label="bar chart">
+      ${grid.join("")}
+      <line x1="${frame.chartLeft}" y1="${frame.chartBottom}" x2="${frame.chartRight}" y2="${frame.chartBottom}" stroke="${theme.axis}" stroke-width="1.5" />
+      ${labels.join("")}
+      ${bars.join("")}
+      ${values.join("")}
+    </svg>
+  `;
+}
+
+function buildLineChart(points, size, theme) {
+  const frame = buildSvgFrame(size);
+  const chartWidth = frame.chartRight - frame.chartLeft;
+  const chartHeight = frame.chartBottom - frame.chartTop;
+  const max = Math.max(...points.map(point => point.value), 1);
+  const steps = 5;
+  const showGrid = document.getElementById("showGrid").checked;
+  const showValues = document.getElementById("showValues").checked;
+  const stepX = points.length > 1 ? chartWidth / (points.length - 1) : chartWidth / 2;
+  const linePoints = [];
+  const grid = [];
+  const labels = [];
+  const dots = [];
+  const values = [];
+  const showMarkers = document.getElementById("showMarkers").checked;
+
+  for (let i = 0; i <= steps; i += 1) {
+    const value = (max / steps) * i;
+    const y = frame.chartBottom - (chartHeight * i / steps);
+    if (showGrid) {
+      grid.push(`<line x1="${frame.chartLeft}" y1="${y}" x2="${frame.chartRight}" y2="${y}" stroke="${theme.grid}" stroke-width="1" />`);
+    }
+    labels.push(`<text x="${frame.chartLeft - 14}" y="${y + 5}" text-anchor="end" font-size="${getScaledFont(13)}" fill="${theme.axis}">${escapeHtml(formatValue(Math.round(value)))}</text>`);
+  }
+
+  points.forEach((point, index) => {
+    const x = frame.chartLeft + (points.length > 1 ? stepX * index : chartWidth / 2);
+    const y = frame.chartBottom - chartHeight * (point.value / max);
+    linePoints.push(`${x},${y}`);
+    labels.push(`<text x="${x}" y="${frame.chartBottom + 24}" text-anchor="middle" font-size="${getScaledFont(14)}" fill="${theme.axis}">${escapeHtml(point.label)}</text>`);
+    if (showMarkers) {
+      dots.push(`<circle cx="${x}" cy="${y}" r="6" fill="${theme.series[0]}" stroke="#fff" stroke-width="3" />`);
+    }
+    if (showValues) {
+      values.push(`<text x="${x}" y="${y - 12}" text-anchor="middle" font-size="${getScaledFont(13)}" font-weight="700" fill="${theme.series[0]}">${escapeHtml(formatValue(point.value))}</text>`);
+    }
+  });
+
+  const areaPoints = `${frame.chartLeft},${frame.chartBottom} ${linePoints.join(" ")} ${frame.chartRight},${frame.chartBottom}`;
+
+  return `
+    <svg class="chart-svg" viewBox="0 0 ${size.width} ${size.height}" role="img" aria-label="line chart">
+      ${grid.join("")}
+      <line x1="${frame.chartLeft}" y1="${frame.chartBottom}" x2="${frame.chartRight}" y2="${frame.chartBottom}" stroke="${theme.axis}" stroke-width="1.5" />
+      <polygon points="${areaPoints}" fill="${theme.series[0]}22" />
+      <polyline points="${linePoints.join(" ")}" fill="none" stroke="${theme.series[0]}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" />
+      ${labels.join("")}
+      ${dots.join("")}
+      ${values.join("")}
+    </svg>
+  `;
+}
+
+function buildAreaChart(points, size, theme) {
+  const frame = buildSvgFrame(size);
+  const chartWidth = frame.chartRight - frame.chartLeft;
+  const chartHeight = frame.chartBottom - frame.chartTop;
+  const max = Math.max(...points.map(point => point.value), 1);
+  const steps = 5;
+  const showGrid = document.getElementById("showGrid").checked;
+  const showValues = document.getElementById("showValues").checked;
+  const showMarkers = document.getElementById("showMarkers").checked;
+  const stepX = points.length > 1 ? chartWidth / (points.length - 1) : chartWidth / 2;
+  const linePoints = [];
+  const grid = [];
+  const labels = [];
+  const dots = [];
+  const values = [];
+
+  for (let i = 0; i <= steps; i += 1) {
+    const value = (max / steps) * i;
+    const y = frame.chartBottom - (chartHeight * i / steps);
+    if (showGrid) {
+      grid.push(`<line x1="${frame.chartLeft}" y1="${y}" x2="${frame.chartRight}" y2="${y}" stroke="${theme.grid}" stroke-width="1" />`);
+    }
+    labels.push(`<text x="${frame.chartLeft - 14}" y="${y + 5}" text-anchor="end" font-size="${getScaledFont(13)}" fill="${theme.axis}">${escapeHtml(formatValue(Math.round(value)))}</text>`);
+  }
+
+  points.forEach((point, index) => {
+    const x = frame.chartLeft + (points.length > 1 ? stepX * index : chartWidth / 2);
+    const y = frame.chartBottom - chartHeight * (point.value / max);
+    linePoints.push(`${x},${y}`);
+    labels.push(`<text x="${x}" y="${frame.chartBottom + 24}" text-anchor="middle" font-size="${getScaledFont(14)}" fill="${theme.axis}">${escapeHtml(point.label)}</text>`);
+    if (showMarkers) {
+      dots.push(`<circle cx="${x}" cy="${y}" r="5" fill="${theme.series[0]}" stroke="#fff" stroke-width="2.5" />`);
+    }
+    if (showValues) {
+      values.push(`<text x="${x}" y="${y - 12}" text-anchor="middle" font-size="${getScaledFont(13)}" font-weight="700" fill="${theme.series[0]}">${escapeHtml(formatValue(point.value))}</text>`);
+    }
+  });
+
+  const firstX = points.length > 1 ? frame.chartLeft : frame.chartLeft + chartWidth / 2;
+  const lastX = points.length > 1 ? frame.chartRight : frame.chartLeft + chartWidth / 2;
+  const areaPoints = `${firstX},${frame.chartBottom} ${linePoints.join(" ")} ${lastX},${frame.chartBottom}`;
+
+  return `
+    <svg class="chart-svg" viewBox="0 0 ${size.width} ${size.height}" role="img" aria-label="area chart">
+      ${grid.join("")}
+      <line x1="${frame.chartLeft}" y1="${frame.chartBottom}" x2="${frame.chartRight}" y2="${frame.chartBottom}" stroke="${theme.axis}" stroke-width="1.5" />
+      <polygon points="${areaPoints}" fill="${theme.series[0]}33" />
+      <polyline points="${linePoints.join(" ")}" fill="none" stroke="${theme.series[0]}" stroke-width="4" stroke-linejoin="round" stroke-linecap="round" />
+      ${labels.join("")}
+      ${dots.join("")}
+      ${values.join("")}
+    </svg>
+  `;
+}
+
+function buildGroupedBarChart(allSeries, size, theme) {
+  const frame = buildSvgFrame(size);
+  const chartWidth = frame.chartRight - frame.chartLeft;
+  const chartHeight = frame.chartBottom - frame.chartTop;
+  const rowCount = Math.max(...allSeries.map(item => item.points.length), 0);
+  const max = Math.max(...allSeries.flatMap(item => item.points.map(point => point.value)), 1);
+  const steps = 5;
+  const showGrid = document.getElementById("showGrid").checked;
+  const showValues = document.getElementById("showValues").checked;
+  const labels = [];
+  const grid = [];
+  const bars = [];
+  const values = [];
+  const categoryGap = Math.max(18, chartWidth * 0.025);
+  const slotWidth = chartWidth / Math.max(rowCount, 1);
+  const groupInnerGap = 8;
+  const barWidth = Math.max(10, Math.min(48, (slotWidth - categoryGap - groupInnerGap * (allSeries.length - 1)) / Math.max(allSeries.length, 1)));
+  const radius = Number(document.getElementById("barRadius").value || 10);
+
+  for (let i = 0; i <= steps; i += 1) {
+    const value = (max / steps) * i;
+    const y = frame.chartBottom - (chartHeight * i / steps);
+    if (showGrid) {
+      grid.push(`<line x1="${frame.chartLeft}" y1="${y}" x2="${frame.chartRight}" y2="${y}" stroke="${theme.grid}" stroke-width="1" />`);
+    }
+    labels.push(`<text x="${frame.chartLeft - 14}" y="${y + 5}" text-anchor="end" font-size="${getScaledFont(13)}" fill="${theme.axis}">${escapeHtml(formatValue(Math.round(value)))}</text>`);
+  }
+
+  for (let rowIndex = 0; rowIndex < rowCount; rowIndex += 1) {
+    const baseX = frame.chartLeft + slotWidth * rowIndex + (slotWidth - (barWidth * allSeries.length + groupInnerGap * (allSeries.length - 1))) / 2;
+    const label = allSeries[0].points[rowIndex]?.label || "";
+    labels.push(`<text x="${frame.chartLeft + slotWidth * rowIndex + slotWidth / 2}" y="${frame.chartBottom + 24}" text-anchor="middle" font-size="${getScaledFont(14)}" fill="${theme.axis}">${escapeHtml(label)}</text>`);
+
+    allSeries.forEach((entry, seriesIndex) => {
+      const point = entry.points[rowIndex];
+      if (!point) return;
+      const height = Math.max(2, chartHeight * (point.value / max));
+      const x = baseX + seriesIndex * (barWidth + groupInnerGap);
+      const y = frame.chartBottom - height;
+      const color = theme.series[seriesIndex % theme.series.length];
+      bars.push(`<rect x="${x}" y="${y}" width="${barWidth}" height="${height}" rx="${radius}" fill="${color}" />`);
+      if (showValues) {
+        values.push(`<text x="${x + barWidth / 2}" y="${y - 10}" text-anchor="middle" font-size="${getScaledFont(12)}" font-weight="700" fill="${color}">${escapeHtml(formatValue(point.value))}</text>`);
+      }
+    });
+  }
+
+  return `
+    <svg class="chart-svg" viewBox="0 0 ${size.width} ${size.height}" role="img" aria-label="grouped bar chart">
+      ${grid.join("")}
+      <line x1="${frame.chartLeft}" y1="${frame.chartBottom}" x2="${frame.chartRight}" y2="${frame.chartBottom}" stroke="${theme.axis}" stroke-width="1.5" />
+      ${labels.join("")}
+      ${bars.join("")}
+      ${values.join("")}
+    </svg>
+  `;
+}
+
+function buildStackedBarChart(allSeries, size, theme) {
+  const frame = buildSvgFrame(size);
+  const chartWidth = frame.chartRight - frame.chartLeft;
+  const chartHeight = frame.chartBottom - frame.chartTop;
+  const rowCount = Math.max(...allSeries.map(item => item.points.length), 0);
+  const totals = Array.from({ length: rowCount }, (_, rowIndex) =>
+    allSeries.reduce((sum, entry) => sum + (entry.points[rowIndex]?.value || 0), 0)
+  );
+  const max = Math.max(...totals, 1);
+  const steps = 5;
+  const showGrid = document.getElementById("showGrid").checked;
+  const showValues = document.getElementById("showValues").checked;
+  const labels = [];
+  const grid = [];
+  const bars = [];
+  const values = [];
+  const slotWidth = chartWidth / Math.max(rowCount, 1);
+  const barWidth = Math.min(84, slotWidth * 0.62);
+  const radius = Number(document.getElementById("barRadius").value || 10);
+
+  for (let i = 0; i <= steps; i += 1) {
+    const value = (max / steps) * i;
+    const y = frame.chartBottom - (chartHeight * i / steps);
+    if (showGrid) {
+      grid.push(`<line x1="${frame.chartLeft}" y1="${y}" x2="${frame.chartRight}" y2="${y}" stroke="${theme.grid}" stroke-width="1" />`);
+    }
+    labels.push(`<text x="${frame.chartLeft - 14}" y="${y + 5}" text-anchor="end" font-size="${getScaledFont(13)}" fill="${theme.axis}">${escapeHtml(formatValue(Math.round(value)))}</text>`);
+  }
+
+  for (let rowIndex = 0; rowIndex < rowCount; rowIndex += 1) {
+    const x = frame.chartLeft + slotWidth * rowIndex + (slotWidth - barWidth) / 2;
+    const label = allSeries[0].points[rowIndex]?.label || "";
+    let currentTop = frame.chartBottom;
+    labels.push(`<text x="${frame.chartLeft + slotWidth * rowIndex + slotWidth / 2}" y="${frame.chartBottom + 24}" text-anchor="middle" font-size="${getScaledFont(14)}" fill="${theme.axis}">${escapeHtml(label)}</text>`);
+
+    allSeries.forEach((entry, seriesIndex) => {
+      const point = entry.points[rowIndex];
+      if (!point || point.value <= 0) return;
+      const height = chartHeight * (point.value / max);
+      const y = currentTop - height;
+      const color = theme.series[seriesIndex % theme.series.length];
+      const rx = seriesIndex === allSeries.length - 1 ? radius : 0;
+      bars.push(`<rect x="${x}" y="${y}" width="${barWidth}" height="${height}" rx="${rx}" fill="${color}" />`);
+      currentTop = y;
+    });
+
+    if (showValues) {
+      values.push(`<text x="${x + barWidth / 2}" y="${currentTop - 10}" text-anchor="middle" font-size="${getScaledFont(12)}" font-weight="700" fill="${theme.axis}">${escapeHtml(formatValue(totals[rowIndex]))}</text>`);
+    }
+  }
+
+  return `
+    <svg class="chart-svg" viewBox="0 0 ${size.width} ${size.height}" role="img" aria-label="stacked bar chart">
+      ${grid.join("")}
+      <line x1="${frame.chartLeft}" y1="${frame.chartBottom}" x2="${frame.chartRight}" y2="${frame.chartBottom}" stroke="${theme.axis}" stroke-width="1.5" />
+      ${labels.join("")}
+      ${bars.join("")}
+      ${values.join("")}
+    </svg>
+  `;
+}
+
+function buildScatterChart(scatterData, size, theme) {
+  const frame = buildSvgFrame(size);
+  const chartWidth = frame.chartRight - frame.chartLeft;
+  const chartHeight = frame.chartBottom - frame.chartTop;
+  const maxX = Math.max(...scatterData.points.map(point => point.x), 1);
+  const maxY = Math.max(...scatterData.points.map(point => point.y), 1);
+  const steps = 5;
+  const showGrid = document.getElementById("showGrid").checked;
+  const showValues = document.getElementById("showValues").checked;
+  const labels = [];
+  const grid = [];
+  const pointsSvg = [];
+
+  for (let i = 0; i <= steps; i += 1) {
+    const x = frame.chartLeft + chartWidth * i / steps;
+    const y = frame.chartBottom - chartHeight * i / steps;
+    if (showGrid) {
+      grid.push(`<line x1="${frame.chartLeft}" y1="${y}" x2="${frame.chartRight}" y2="${y}" stroke="${theme.grid}" stroke-width="1" />`);
+      grid.push(`<line x1="${x}" y1="${frame.chartTop}" x2="${x}" y2="${frame.chartBottom}" stroke="${theme.grid}" stroke-width="1" />`);
+    }
+    labels.push(`<text x="${frame.chartLeft - 14}" y="${y + 5}" text-anchor="end" font-size="${getScaledFont(13)}" fill="${theme.axis}">${escapeHtml(formatValue(Math.round(maxY * i / steps)))}</text>`);
+    labels.push(`<text x="${x}" y="${frame.chartBottom + 24}" text-anchor="middle" font-size="${getScaledFont(13)}" fill="${theme.axis}">${escapeHtml(formatValue(Math.round(maxX * i / steps)))}</text>`);
+  }
+
+  scatterData.points.forEach((point, index) => {
+    const x = frame.chartLeft + chartWidth * (point.x / maxX);
+    const y = frame.chartBottom - chartHeight * (point.y / maxY);
+    const color = theme.series[index % theme.series.length];
+    pointsSvg.push(`<circle cx="${x}" cy="${y}" r="8" fill="${color}" fill-opacity="0.85" stroke="#fff" stroke-width="3" />`);
+    pointsSvg.push(`<text x="${x}" y="${y - 14}" text-anchor="middle" font-size="${getScaledFont(12)}" fill="${theme.axis}">${escapeHtml(point.label)}</text>`);
+    if (showValues) {
+      pointsSvg.push(`<text x="${x}" y="${y + 26}" text-anchor="middle" font-size="${getScaledFont(11)}" fill="${color}">${escapeHtml(`${point.x}, ${point.y}`)}</text>`);
+    }
+  });
+
+  return `
+    <svg class="chart-svg" viewBox="0 0 ${size.width} ${size.height}" role="img" aria-label="scatter chart">
+      ${grid.join("")}
+      <line x1="${frame.chartLeft}" y1="${frame.chartBottom}" x2="${frame.chartRight}" y2="${frame.chartBottom}" stroke="${theme.axis}" stroke-width="1.5" />
+      <line x1="${frame.chartLeft}" y1="${frame.chartBottom}" x2="${frame.chartLeft}" y2="${frame.chartTop}" stroke="${theme.axis}" stroke-width="1.5" />
+      ${labels.join("")}
+      ${pointsSvg.join("")}
+      <text x="${(frame.chartLeft + frame.chartRight) / 2}" y="${size.height - 8}" text-anchor="middle" font-size="${getScaledFont(13)}" fill="${theme.axis}">${escapeHtml(scatterData.xSeries.name)}</text>
+      <text x="26" y="${(frame.chartTop + frame.chartBottom) / 2}" text-anchor="middle" font-size="${getScaledFont(13)}" fill="${theme.axis}" transform="rotate(-90 26 ${(frame.chartTop + frame.chartBottom) / 2})">${escapeHtml(scatterData.ySeries.name)}</text>
+    </svg>
+  `;
+}
+
+function buildPieChart(points, size, theme) {
+  const width = size.width;
+  const height = size.height;
+  const cx = width / 2;
+  const cy = height / 2 + 20;
+  const radius = Math.min(width, height) * 0.24;
+  const innerRadius = radius * 0.56;
+  const total = points.reduce((sum, point) => sum + point.value, 0);
+  const slices = [];
+  const showValues = document.getElementById("showValues").checked;
+  let startAngle = -Math.PI / 2;
+
+  points.forEach((point, index) => {
+    const angle = total === 0 ? 0 : (point.value / total) * Math.PI * 2;
+    const endAngle = startAngle + angle;
+    const x1 = cx + radius * Math.cos(startAngle);
+    const y1 = cy + radius * Math.sin(startAngle);
+    const x2 = cx + radius * Math.cos(endAngle);
+    const y2 = cy + radius * Math.sin(endAngle);
+    const largeArc = angle > Math.PI ? 1 : 0;
+    const color = theme.series[index % theme.series.length];
+    const path = [
+      `M ${cx} ${cy}`,
+      `L ${x1} ${y1}`,
+      `A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2}`,
+      "Z"
+    ].join(" ");
+    slices.push(`<path d="${path}" fill="${color}" />`);
+
+    if (showValues) {
+      const mid = startAngle + angle / 2;
+      const labelX = cx + (radius + 34) * Math.cos(mid);
+      const labelY = cy + (radius + 34) * Math.sin(mid);
+      const percent = Math.round((point.value / total) * 100);
+      slices.push(`<text x="${labelX}" y="${labelY}" text-anchor="middle" font-size="${getScaledFont(13)}" font-weight="700" fill="${color}">${percent}%</text>`);
+    }
+    startAngle = endAngle;
+  });
+
+  return `
+    <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="pie chart">
+      ${slices.join("")}
+      <circle cx="${cx}" cy="${cy}" r="${innerRadius}" fill="#ffffff" />
+      <text x="${cx}" y="${cy - 6}" text-anchor="middle" font-size="${getScaledFont(14)}" fill="${theme.axis}">合計</text>
+      <text x="${cx}" y="${cy + 22}" text-anchor="middle" font-size="${getScaledFont(24)}" font-weight="800" fill="${theme.accent}">${escapeHtml(formatValue(total))}</text>
+    </svg>
+  `;
+}
+
+function buildLegend(points, theme, singleSeriesName) {
+  const showLegend = document.getElementById("showLegend").checked;
+  if (!showLegend) return "";
+
+  const chartType = document.getElementById("chartType").value;
+  let items = [{ label: singleSeriesName, color: theme.series[0] }];
+  if (chartType === "pie") {
+    items = points.map((point, index) => ({ label: point.label, color: theme.series[index % theme.series.length] }));
+  }
+
+  return `
+    <div class="legend">
+      ${items.map(item => `
+        <span class="legend-item">
+          <span class="legend-chip" style="background:${item.color}"></span>
+          <span>${escapeHtml(item.label)}</span>
+        </span>
+      `).join("")}
+    </div>
+  `;
+}
+
+function buildMultiSeriesLegend(allSeries, theme) {
+  const showLegend = document.getElementById("showLegend").checked;
+  if (!showLegend) return "";
+  return `
+    <div class="legend">
+      ${allSeries.map((entry, index) => `
+        <span class="legend-item">
+          <span class="legend-chip" style="background:${theme.series[index % theme.series.length]}"></span>
+          <span>${escapeHtml(entry.series.name)}</span>
+        </span>
+      `).join("")}
+    </div>
+  `;
+}
+
+function buildScatterLegend(scatterData, theme) {
+  const showLegend = document.getElementById("showLegend").checked;
+  if (!showLegend) return "";
+  return `
+    <div class="legend">
+      <span class="legend-item">
+        <span class="legend-chip" style="background:${theme.series[0]}"></span>
+        <span>X: ${escapeHtml(scatterData.xSeries.name)}</span>
+      </span>
+      <span class="legend-item">
+        <span class="legend-chip" style="background:${theme.series[1]}"></span>
+        <span>Y: ${escapeHtml(scatterData.ySeries.name)}</span>
+      </span>
+    </div>
+  `;
 }
 
 function buildTableHtml(parsed) {
-  const stripe = document.getElementById('stripeToggle').checked;
-  const colWidth = Math.floor(100 / parsed.head.length);
-  const headHtml = parsed.head
-    .map(h => `<th style="width:${colWidth}%">${renderInline(h)}</th>`)
-    .join('');
-  const bodyHtml = parsed.rows
-    .map(r => `<tr>${r.map(c => `<td>${renderInline(c)}</td>`).join('')}</tr>`)
-    .join('');
-  return `<table class="gen${stripe ? ' striped' : ''}">
-    <thead><tr>${headHtml}</tr></thead>
-    <tbody>${bodyHtml}</tbody>
-  </table>`;
+  const fontSize = getScaledFont(15);
+  const headHtml = parsed.header.map(cell => `<th>${escapeHtml(cell)}</th>`).join("");
+  const bodyHtml = parsed.rows.map(row => `
+    <tr>${row.map(cell => `<td>${escapeHtml(cell)}</td>`).join("")}</tr>
+  `).join("");
+  return `
+    <div class="chart-header">
+      <h2 class="chart-title" style="font-size:${getScaledFont(28)}px">${escapeHtml(document.getElementById("chartTitle").value || "表タイトル")}</h2>
+      <p class="chart-subtitle" style="font-size:${getScaledFont(14)}px">${escapeHtml(document.getElementById("chartSubtitle").value || "")}</p>
+    </div>
+    <table class="data-table" style="font-size:${fontSize}px">
+      <thead><tr>${headHtml}</tr></thead>
+      <tbody>${bodyHtml}</tbody>
+    </table>
+    <div class="footer-note">Source data rows: ${parsed.rows.length} / Columns: ${parsed.header.length}</div>
+  `;
 }
 
-function renderTable() {
-  if (!parsedData) return;
-  const target = document.getElementById('captureTarget');
-  target.innerHTML = buildTableHtml(parsedData);
+function updateControlVisibility() {
+  const outputMode = document.getElementById("outputMode").value;
+  const chartType = document.getElementById("chartType").value;
+  const secondaryWrap = document.getElementById("seriesIndexSecondary").closest(".control");
+  const valueUnitWrap = document.getElementById("valueUnit").closest(".control");
+  const markerToggle = document.getElementById("showMarkers").closest(".toggle");
+  const chartTypeWrap = document.getElementById("chartType").closest(".control");
+  const seriesWrap = document.getElementById("seriesIndex").closest(".control");
+  const sizeWrap = document.getElementById("chartSize").closest(".control");
+  const legendToggle = document.getElementById("showLegend").closest(".toggle");
+  const valueToggle = document.getElementById("showValues").closest(".toggle");
+  const gridToggle = document.getElementById("showGrid").closest(".toggle");
+
+  chartTypeWrap.style.display = outputMode === "chart" ? "" : "none";
+  seriesWrap.style.display = outputMode === "chart" ? "" : "none";
+  sizeWrap.style.display = "";
+  secondaryWrap.style.display = outputMode === "chart" && chartType === "scatter" ? "" : "none";
+  valueUnitWrap.style.display = outputMode === "chart" && chartType !== "scatter" ? "" : "none";
+  markerToggle.style.display = outputMode === "chart" && (chartType === "line" || chartType === "area") ? "flex" : "none";
+  legendToggle.style.display = outputMode === "chart" ? "flex" : "none";
+  valueToggle.style.display = outputMode === "chart" ? "flex" : "none";
+  gridToggle.style.display = outputMode === "chart" ? "flex" : "none";
 }
 
-// ── CONVERT ──
-function convert() {
-  const md = document.getElementById('md').value;
-  parsedData = parseMarkdownTable(md);
-  if (!parsedData) { showToast('⚠️', 'Markdown表を貼り付けてください'); return false; }
-  applyTheme();
-  renderTable();
-  document.getElementById('statusDot').classList.add('ready');
-  document.getElementById('statusText').textContent = `${parsedData.head.length}列 × ${parsedData.rows.length}行`;
-  return true;
+function renderChart() {
+  const input = document.getElementById("dataInput").value.trim();
+  const target = document.getElementById("captureTarget");
+  if (!input) {
+    target.innerHTML = '<div class="empty">左にデータを貼り付けて、<br>「プレビュー更新」を押してください。</div>';
+    document.getElementById("statusText").textContent = "未描画";
+    document.getElementById("statusText").classList.remove("ready");
+    return;
+  }
+
+  const parsed = parseInputTable(input);
+  if (!parsed || parsed.series.length === 0) {
+    target.innerHTML = '<div class="empty">1列目にラベル、2列目以降に数値が入った表を使ってください。</div>';
+    document.getElementById("statusText").textContent = "データ形式を確認";
+    document.getElementById("statusText").classList.remove("ready");
+    return;
+  }
+
+  state.parsed = parsed;
+  populateSeriesSelect(parsed);
+  const theme = applyThemeVariables();
+  updateControlVisibility();
+
+  const size = SIZE_PRESETS[document.getElementById("chartSize").value];
+  target.style.maxWidth = size.width + "px";
+  target.style.width = "100%";
+  target.style.background = theme.bg;
+  document.documentElement.style.setProperty("--bar-radius", document.getElementById("barRadius").value);
+  document.documentElement.style.setProperty("--font-size", getScaledFont(14) + "px");
+
+  const outputMode = document.getElementById("outputMode").value;
+  if (outputMode === "table") {
+    target.innerHTML = buildTableHtml(parsed);
+    const status = document.getElementById("statusText");
+    status.textContent = `${parsed.header.length}列 / ${parsed.rows.length}行の表を描画`;
+    status.classList.add("ready");
+    return;
+  }
+
+  const chartType = document.getElementById("chartType").value;
+  const seriesData = getCurrentSeriesData(parsed);
+  let svg = "";
+  let legendHtml = "";
+  let footerRows = 0;
+  let statusText = "";
+  if (chartType === "line") {
+    if (!seriesData) {
+      target.innerHTML = '<div class="empty">選択中の数値列に有効な数値がありません。</div>';
+      document.getElementById("statusText").textContent = "数値列なし";
+      document.getElementById("statusText").classList.remove("ready");
+      return;
+    }
+    svg = buildLineChart(seriesData.points, size, theme);
+    legendHtml = buildLegend(seriesData.points, theme, seriesData.series.name);
+    footerRows = seriesData.points.length;
+    statusText = `${seriesData.series.name} / ${seriesData.points.length}件を描画`;
+  } else if (chartType === "area") {
+    if (!seriesData) {
+      target.innerHTML = '<div class="empty">選択中の数値列に有効な数値がありません。</div>';
+      document.getElementById("statusText").textContent = "数値列なし";
+      document.getElementById("statusText").classList.remove("ready");
+      return;
+    }
+    svg = buildAreaChart(seriesData.points, size, theme);
+    legendHtml = buildLegend(seriesData.points, theme, seriesData.series.name);
+    footerRows = seriesData.points.length;
+    statusText = `${seriesData.series.name} / ${seriesData.points.length}件を描画`;
+  } else if (chartType === "grouped-bar") {
+    const allSeries = getAllSeriesData(parsed);
+    if (!allSeries.length) {
+      target.innerHTML = '<div class="empty">有効な数値列が見つかりません。</div>';
+      document.getElementById("statusText").textContent = "数値列なし";
+      document.getElementById("statusText").classList.remove("ready");
+      return;
+    }
+    svg = buildGroupedBarChart(allSeries, size, theme);
+    legendHtml = buildMultiSeriesLegend(allSeries, theme);
+    footerRows = allSeries[0].points.length;
+    statusText = `${allSeries.length}系列 / ${footerRows}件を描画`;
+  } else if (chartType === "stacked-bar") {
+    const allSeries = getAllSeriesData(parsed);
+    if (!allSeries.length) {
+      target.innerHTML = '<div class="empty">有効な数値列が見つかりません。</div>';
+      document.getElementById("statusText").textContent = "数値列なし";
+      document.getElementById("statusText").classList.remove("ready");
+      return;
+    }
+    svg = buildStackedBarChart(allSeries, size, theme);
+    legendHtml = buildMultiSeriesLegend(allSeries, theme);
+    footerRows = allSeries[0].points.length;
+    statusText = `${allSeries.length}系列 / ${footerRows}件を描画`;
+  } else if (chartType === "scatter") {
+    const scatterData = getScatterSeriesData(parsed);
+    if (!scatterData) {
+      target.innerHTML = '<div class="empty">散布図は異なる2つの数値列を選んでください。</div>';
+      document.getElementById("statusText").textContent = "散布図の列を選択";
+      document.getElementById("statusText").classList.remove("ready");
+      return;
+    }
+    svg = buildScatterChart(scatterData, size, theme);
+    legendHtml = buildScatterLegend(scatterData, theme);
+    footerRows = scatterData.points.length;
+    statusText = `${scatterData.xSeries.name} × ${scatterData.ySeries.name} / ${footerRows}件を描画`;
+  } else if (chartType === "pie") {
+    if (!seriesData) {
+      target.innerHTML = '<div class="empty">選択中の数値列に有効な数値がありません。</div>';
+      document.getElementById("statusText").textContent = "数値列なし";
+      document.getElementById("statusText").classList.remove("ready");
+      return;
+    }
+    svg = buildPieChart(seriesData.points, size, theme);
+    legendHtml = buildLegend(seriesData.points, theme, seriesData.series.name);
+    footerRows = seriesData.points.length;
+    statusText = `${seriesData.series.name} / ${seriesData.points.length}件を描画`;
+  } else {
+    if (!seriesData) {
+      target.innerHTML = '<div class="empty">選択中の数値列に有効な数値がありません。</div>';
+      document.getElementById("statusText").textContent = "数値列なし";
+      document.getElementById("statusText").classList.remove("ready");
+      return;
+    }
+    svg = buildBarChart(seriesData.points, size, theme);
+    legendHtml = buildLegend(seriesData.points, theme, seriesData.series.name);
+    footerRows = seriesData.points.length;
+    statusText = `${seriesData.series.name} / ${seriesData.points.length}件を描画`;
+  }
+
+  target.innerHTML = `
+    <div class="chart-header">
+      <h2 class="chart-title" style="font-size:${getScaledFont(28)}px">${escapeHtml(document.getElementById("chartTitle").value || "グラフタイトル")}</h2>
+      <p class="chart-subtitle" style="font-size:${getScaledFont(14)}px">${escapeHtml(document.getElementById("chartSubtitle").value || "")}</p>
+    </div>
+    ${svg}
+    ${legendHtml}
+    <div class="footer-note">Source data rows: ${footerRows} / Theme: ${escapeHtml(theme.name)}</div>
+  `;
+
+  const status = document.getElementById("statusText");
+  status.textContent = statusText;
+  status.classList.add("ready");
 }
 
-// ── COPY IMAGE ──
-async function doCapture() {
-  const table = document.querySelector('#captureTarget table');
-  if (!table) { showToast('⚠️', '先に変換してください'); return false; }
-
-  const canvas = await html2canvas(table, { backgroundColor: '#ffffff', scale: 2, useCORS: true });
-  const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
-  await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-  return true;
+async function capturePngBlob() {
+  const target = document.getElementById("captureTarget");
+  if (target.querySelector(".empty")) {
+    showToast("先にプレビューを更新してください");
+    return null;
+  }
+  const canvas = await html2canvas(target, {
+    backgroundColor: "#ffffff",
+    scale: 2,
+    useCORS: true
+  });
+  return await new Promise(resolve => canvas.toBlob(resolve, "image/png"));
 }
 
-async function convertAndCopy() {
-  if (!convert()) return;
-  await new Promise(r => setTimeout(r, 80)); // レンダリング待ち
-  const ok = await doCapture();
-  if (ok) showToast('✅', '変換＆画像コピー完了！noteに貼り付けてください');
-}
-
-async function copyOnly() {
-  const ok = await doCapture();
-  if (ok) showToast('📋', '画像コピーしました');
-}
-
-// ── PNG DOWNLOAD ──
 async function downloadPng() {
-  const table = document.querySelector('#captureTarget table');
-  if (!table) { showToast('⚠️', '先に変換してください'); return; }
-  const canvas = await html2canvas(table, { backgroundColor: '#ffffff', scale: 2, useCORS: true });
-  const a = Object.assign(document.createElement('a'), {
-    href: canvas.toDataURL('image/png'),
-    download: 'table.png'
-  });
-  a.click();
-  showToast('🖼️', 'PNGを保存しました');
+  const blob = await capturePngBlob();
+  if (!blob) return;
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "note-chart.png";
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  showToast("PNGを保存しました");
 }
 
-// ── COPY HTML ──
-function copyHtml() {
-  if (!parsedData) { showToast('⚠️', '先に変換してください'); return; }
-  const html = buildTableHtml(parsedData);
-  navigator.clipboard.writeText(html).then(() => showToast('📄', 'HTMLをコピーしました'));
+async function copyImage() {
+  const blob = await capturePngBlob();
+  if (!blob) return;
+  await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+  showToast("画像をクリップボードにコピーしました");
 }
 
-// ── CSV ──
-function downloadCsv() {
-  if (!parsedData) { showToast('⚠️', '先に変換してください'); return; }
-  const rows = [parsedData.head, ...parsedData.rows];
-  const csv = rows.map(r => r.map(c => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-  const a = Object.assign(document.createElement('a'), {
-    href: URL.createObjectURL(blob),
-    download: 'table.csv'
-  });
-  a.click();
-  showToast('⬇️', 'CSVダウンロードしました');
+function loadSample() {
+  document.getElementById("dataInput").value = `| 月 | 売上 | 目標 |
+|---|---:|---:|
+| 1月 | 120 | 100 |
+| 2月 | 135 | 110 |
+| 3月 | 168 | 130 |
+| 4月 | 155 | 140 |
+| 5月 | 182 | 150 |
+| 6月 | 210 | 165 |`;
+  document.getElementById("chartTitle").value = "月別売上の推移";
+  document.getElementById("chartSubtitle").value = "2026年上期の実績。表にもグラフにも切り替えて使えます。";
+  document.getElementById("outputMode").value = "chart";
+  renderChart();
+  showToast("サンプルを読み込みました");
 }
 
-// ── TOAST ──
-function showToast(icon, msg) {
-  const t = document.getElementById('toast');
-  document.getElementById('toastIcon').textContent = icon;
-  document.getElementById('toastMsg').textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2800);
-}
-
-// ── INIT ──
-buildThemeGrid();
-
-// Ctrl+Enter でワンクリック変換
-document.getElementById('md').addEventListener('keydown', e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') convertAndCopy();
+document.getElementById("renderBtn").addEventListener("click", renderChart);
+document.getElementById("pngBtn").addEventListener("click", downloadPng);
+document.getElementById("copyBtn").addEventListener("click", copyImage);
+document.getElementById("sampleBtn").addEventListener("click", loadSample);
+document.getElementById("fontScale").addEventListener("input", event => {
+  document.getElementById("fontScaleValue").textContent = `${event.target.value}%`;
+  renderChart();
 });
+document.getElementById("barRadius").addEventListener("input", event => {
+  document.getElementById("barRadiusValue").textContent = event.target.value;
+  renderChart();
+});
+["outputMode", "chartType", "chartSize", "seriesIndex", "seriesIndexSecondary", "showLegend", "showValues", "showMarkers", "showGrid", "valueUnit", "chartTitle", "chartSubtitle", "customHeaderBg", "customHeaderText", "customSeries1", "customSeries2", "customGridColor", "customAxisColor"].forEach(id => {
+  document.getElementById(id).addEventListener("input", renderChart);
+  document.getElementById(id).addEventListener("change", renderChart);
+});
+document.getElementById("dataInput").addEventListener("keydown", event => {
+  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+    renderChart();
+  }
+});
+
+buildThemeGrid();
+updateControlVisibility();
+loadSample();
 </script>
 </body>
 </html>
-<!-- update -->
