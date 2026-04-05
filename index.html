@@ -426,8 +426,8 @@ table.data-table tbody tr:nth-child(even) td {
 | 3月 | 168 | 130 |
 | 4月 | 155 | 140 |"></textarea>
       <div class="file-row">
-        <button class="btn-secondary" type="button" id="fileBtn">CSV / TSV を選択</button>
-        <input id="fileInput" type="file" accept=".csv,.tsv,.txt,.md" hidden>
+        <label class="btn-secondary" for="fileInput" style="cursor:pointer">CSV / TSV を選択</label>
+        <input id="fileInput" type="file" accept=".csv,.tsv,.txt,.md" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none">
       </div>
       <div class="file-name" id="fileName">ファイル未選択。コピペ入力でも使えます。</div>
     </div>
@@ -1568,7 +1568,4 @@ function renderChart() {
     if (!seriesData) {
       target.innerHTML = '<div class="empty">選択中の数値列に有効な数値がありません。</div>';
       document.getElementById("statusText").textContent = "数値列なし";
-      document.getElementById("statusText").classList.remove("ready");
-      return;
-    }
-    svg = buildBarChart(seriesData.points, size, theme
+      document.getElementById("statusText").classList.remove("ready")
