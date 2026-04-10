@@ -130,6 +130,11 @@ textarea {
   font-family: Consolas, "Courier New", monospace;
 }
 
+::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+
 .row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -436,11 +441,11 @@ table.data-table tbody tr:nth-child(even) td {
       <h2>Chart Setup</h2>
       <div class="control">
         <label for="chartTitle">タイトル</label>
-        <input id="chartTitle" type="text" value="月別売上の推移">
+        <input id="chartTitle" type="text" value="" placeholder="グラフのタイトルを入力">
       </div>
       <div class="control">
         <label for="chartSubtitle">補足</label>
-        <input id="chartSubtitle" type="text" value="2026年上期の売上実績。note掲載向けに見やすく整形。">
+        <input id="chartSubtitle" type="text" value="" placeholder="補足説明（任意）">
       </div>
       <div class="row">
         <div class="control">
@@ -1430,7 +1435,7 @@ function buildTableHtml(parsed) {
   `).join("");
   return `
     <div class="chart-header">
-      <h2 class="chart-title" style="font-size:${getScaledFont(28)}px">${renderMarkdownInline(document.getElementById("chartTitle").value || "表タイトル")}</h2>
+      <h2 class="chart-title" style="font-size:${getScaledFont(28)}px">${renderMarkdownInline(document.getElementById("chartTitle").value || "")}</h2>
       <p class="chart-subtitle" style="font-size:${getScaledFont(14)}px">${renderMarkdownInline(document.getElementById("chartSubtitle").value || "")}</p>
     </div>
     <table class="data-table" style="font-size:${fontSize}px">
@@ -1603,7 +1608,7 @@ function renderChart() {
   // グラフのタイトル・補足もMarkdownインライン変換
   target.innerHTML = `
     <div class="chart-header">
-      <h2 class="chart-title" style="font-size:${getScaledFont(28)}px">${renderMarkdownInline(document.getElementById("chartTitle").value || "グラフタイトル")}</h2>
+      <h2 class="chart-title" style="font-size:${getScaledFont(28)}px">${renderMarkdownInline(document.getElementById("chartTitle").value || "")}</h2>
       <p class="chart-subtitle" style="font-size:${getScaledFont(14)}px">${renderMarkdownInline(document.getElementById("chartSubtitle").value || "")}</p>
     </div>
     ${svg}
