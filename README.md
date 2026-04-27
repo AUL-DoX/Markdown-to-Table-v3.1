@@ -3,7 +3,7 @@
 CSV・TSV・Markdown表を、**noteに貼りやすいグラフ／表のPNG**へ変換するブラウザツールです。
 インストール不要、サーバー不要。HTMLファイルをダブルクリックするだけで動きます。
 
-👉 **[デモを開く]([(https://aul-dox.github.io/Markdown-to-Table/)])**
+👉 **[デモを開く](https://aul-dox.github.io/Markdown-to-Table/)**
 
 ---
 
